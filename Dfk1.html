@@ -138,79 +138,231 @@
         </div>
     </div>
 </div>
+<!-- Masukkan Supabase CDN ke dalam HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // ==========================================
+        // 1. CONFIGURATION BACKEND (KUNCI SAMBUNGAN)
+        // ===================================================
+        const supabaseUrl = 'https://doyyrhhscdpchuvpancq.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRveXlyaGhzY2RwY2h1dnBhbmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjkzNjksImV4cCI6MjA5NTIwNTM2OX0.liPsexqKQTnZe5UpB1DW5zpZ12I05REflxYaNbf6l8A';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
-    let curDay = ""; let curStartIdx = 0; let loggedInUser = "ISMA";
-    let bookingData = {}; let currentActiveSlot = "";
+        // ===================================================
+        // 2. PEMBOLEH UBAH UTAMA (HANYA INI YANG BERUBAH IKUT BILIK)
+        // ===================================================
+        const ROOM_NAME = "DFK 1"; // <<< Untuk DFK 2, tukar kepada "DFK 2", untuk DFK 3 tukar kepada "DFK 3", dan seterusnya.
 
-    function showRoomPhoto() { new bootstrap.Modal(document.getElementById('photoModal')).show(); }
+        // ===================================================
+        // 3. LOGIK SISTEM TEMPAHAN (AUTOMATIK BERSAMBUNG CLOUD)
+        // ===================================================
+        let curDay = ""; 
+        let curStartIdx = 0; 
+        let currentActiveSlot = "";
+        let currentActiveBookingId = null; // Menyimpan ID tempahan yang sedang diklik
+        let bookingData = {}; // Memori tempat menyimpan data sementara untuk dipaparkan
 
-    function handleSlotClick(day, time) {
-        const slotKey = day + "-" + time.replace(/[: ]/g, '');
-        currentActiveSlot = slotKey;
+        // Ambil data user yang sedang login dari localStorage
+        let loggedInUser = localStorage.getItem('currentUser') || 'GUEST';
+        let loggedInUserId = localStorage.getItem('currentUserId'); // Kita ambil UUID mereka
 
-        if (bookingData[slotKey]) {
-            const data = bookingData[slotKey];
-            document.getElementById('infoBooker').innerText = data.booker;
-            document.getElementById('infoSubject').innerText = data.subject;
-            document.getElementById('infoLecturer').innerText = data.lecturer;
-            document.getElementById('infoTimeRange').innerText = data.startTime + " - " + data.endTime;
-            new bootstrap.Modal(document.getElementById('infoModal')).show();
-        } else {
-            curDay = day; curStartIdx = times.indexOf(time);
-            document.getElementById('mDay').value = day;
-            document.getElementById('mStart').value = time;
-            const select = document.getElementById('mEnd');
-            select.innerHTML = "";
-            for (let i = curStartIdx + 1; i < times.length; i++) {
-                let opt = document.createElement('option');
-                opt.value = times[i]; opt.innerHTML = times[i];
-                select.appendChild(opt);
-            }
-            new bootstrap.Modal(document.getElementById('bookingModal')).show();
+        // Jalankan fungsi ini sebaik sahaja halaman dimuatkan (onload)
+        window.onload = function() {
+            fetchBookings();
+        };
+
+        function showRoomPhoto() { 
+            new bootstrap.Modal(document.getElementById('photoModal')).show(); 
         }
-    }
 
-    function processBooking() {
-        const endVal = document.getElementById('mEnd').value;
-        const subVal = document.getElementById('mSubject').value;
-        const lecVal = document.getElementById('mLecturer').value;
-        if(!subVal || !lecVal || !endVal) { alert("PLEASE FILL ALL FIELDS!"); return; }
+        // FUNGSI UNTUK TARIK DATA DARI DATABASE (SELECT)
+        async function fetchBookings() {
+            resetTimetable(); // Kosongkan grid dahulu menjadi AVAILABLE
 
-        const groupID = Date.now();
-        const endIdx = times.indexOf(endVal);
+            // Ambil semua tempahan aktif untuk bilik ini dari Supabase
+            const { data: bookings, error } = await _supabase
+                .from('bookings')
+                .select('*')
+                .eq('room_name', ROOM_NAME)
+                .eq('status', 'Pending'); // Hanya ambil yang masih aktif/belum batal
 
-        times.forEach((time, idx) => {
-            if (idx >= curStartIdx && idx < endIdx) {
-                const key = curDay + "-" + time.replace(/[: ]/g, '');
-                bookingData[key] = {
-                    booker: loggedInUser, subject: subVal, lecturer: lecVal, 
-                    startTime: times[curStartIdx], endTime: endVal, group: groupID
-                };
-                const cell = document.getElementById(key);
-                cell.classList.remove('slot-available');
-                cell.classList.add('slot-booked');
-                cell.innerText = "BOOKED";
+            if (error) {
+                console.error("Gagal mengambil data bookings:", error);
+                return;
             }
-        });
-        bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
-    }
 
-    function cancelBooking() {
-        if (!confirm("DO YOU WANT TO CANCEL THIS?")) return;
-        const targetGroup = bookingData[currentActiveSlot].group;
-        Object.keys(bookingData).forEach(key => {
-            if (bookingData[key].group === targetGroup) {
-                const cell = document.getElementById(key);
+            // Kitar setiap rekod tempahan untuk diwarnakan dalam jadual
+            bookings.forEach(b => {
+                const dayName = b.booking_day; // Contoh: "MONDAY"
+                const startUI = convertToUITime(b.start_time);
+                const endUI = convertToUITime(b.end_time);
+
+                const startIdx = times.indexOf(startUI);
+                const endIdx = times.indexOf(endUI);
+
+                // Warnakan merah semua slot waktu di antara start_time dan end_time
+                times.forEach((time, idx) => {
+                    if (idx >= startIdx && idx < endIdx) {
+                        const key = dayName + "-" + time.replace(/[: ]/g, '');
+                        bookingData[key] = {
+                            id: b.id, // simpan ID unik dari database
+                            booker: b.booked_by,
+                            subject: b.subject,
+                            lecturer: b.lecturer,
+                            startTime: startUI,
+                            endTime: endUI
+                        };
+                        const cell = document.getElementById(key);
+                        if (cell) {
+                            cell.classList.remove('slot-available');
+                            cell.classList.add('slot-booked');
+                            cell.innerText = "BOOKED";
+                        }
+                    }
+                });
+            });
+        }
+
+        function resetTimetable() {
+            bookingData = {};
+            const cells = document.querySelectorAll('.timetable-slot');
+            cells.forEach(cell => {
                 cell.classList.remove('slot-booked');
                 cell.classList.add('slot-available');
                 cell.innerText = "AVAILABLE";
-                delete bookingData[key];
+            });
+        }
+
+        function handleSlotClick(day, time) {
+            const slotKey = day + "-" + time.replace(/[: ]/g, '');
+            currentActiveSlot = slotKey;
+
+            if (bookingData[slotKey]) {
+                const data = bookingData[slotKey];
+                currentActiveBookingId = data.id; // Simpan ID baris dari Supabase untuk cancel nanti
+                document.getElementById('infoBooker').innerText = data.booker;
+                document.getElementById('infoSubject').innerText = data.subject;
+                document.getElementById('infoLecturer').innerText = data.lecturer;
+                document.getElementById('infoTimeRange').innerText = data.startTime + " - " + data.endTime;
+                new bootstrap.Modal(document.getElementById('infoModal')).show();
+            } else {
+                curDay = day; 
+                curStartIdx = times.indexOf(time);
+                document.getElementById('mDay').value = day;
+                document.getElementById('mStart').value = time;
+                
+                const select = document.getElementById('mEnd');
+                select.innerHTML = "";
+                for (let i = curStartIdx + 1; i < times.length; i++) {
+                    let opt = document.createElement('option');
+                    opt.value = times[i]; 
+                    opt.innerHTML = times[i];
+                    select.appendChild(opt);
+                }
+                new bootstrap.Modal(document.getElementById('bookingModal')).show();
             }
-        });
-        bootstrap.Modal.getInstance(document.getElementById('infoModal')).hide();
-    }
-</script>
+        }
+
+        // FUNGSI HANTAR TEMPAHAN BARU KE DATABASE (INSERT)
+        async function processBooking() {
+            const endVal = document.getElementById('mEnd').value;
+            const subVal = document.getElementById('mSubject').value;
+            const lecVal = document.getElementById('mLecturer').value;
+            
+            if (!subVal || !lecVal || !endVal) { 
+                alert("PLEASE FILL ALL FIELDS!"); 
+                return; 
+            }
+
+            // Dapatkan tarikh sebenar mengikut hari yang dipilih (e.g. Isnin minggu ini)
+            const formattedDate = getActualDateForDay(curDay);
+
+            // Masukkan data ke dalam jadual bookings Supabase
+            const { data, error } = await _supabase
+                .from('bookings')
+                .insert([
+                    {
+                        user_id: localStorage.getItem('currentUserId') || null, // Ambil ID user yang login
+                        room_name: 'DFK 1', // Nama bilik (Tukarkan mengikut fail bilik)
+                        booked_by: loggedInUser,
+                        booking_date: formattedDateString(curDay), // Tarikh YYYY-MM-DD
+                        booking_day: curDay,
+                        start_time: convertTo24Hour(document.getElementById('mStart').value),
+                        end_time: convertTo24Hour(endVal),
+                        subject: subVal,
+                        lecturer: lecVal,
+                        status: 'Pending' // Mula-mula status adalah Pending (Nanti robot check-in akan pantau)
+                    }
+                ]);
+
+            if (error) {
+                alert("Tempahan Gagal: " + error.message);
+                console.error(error);
+            } else {
+                alert("BOOKING SUCCESSFUL!");
+                bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
+                fetchBookings(); // Refresh jadual terus dari Supabase!
+            }
+        }
+
+        // FUNGSI BATAL TEMPAHAN (UPDATE STATUS KEPADA CANCELLED)
+        async function cancelBooking() {
+            if (!confirm("DO YOU WANT TO CANCEL THIS?")) return;
+
+            const { error } = await _supabase
+                .from('bookings')
+                .update({ status: 'Cancelled' })
+                .eq('id', currentActiveBookingId);
+
+            if (error) {
+                alert("Pembatalan Gagal: " + error.message);
+            } else {
+                alert("BOOKING CANCELLED!");
+                bootstrap.Modal.getInstance(document.getElementById('infoModal')).hide();
+                fetchBookings(); // Refresh jadual!
+            }
+        }
+
+        // ===================================================
+        // FUNGSI-FUNGSI PEMBANTU (HELPERS) UNTUK PENUKARAN FORMAT DATA
+        // ===================================================
+        
+        // Tukar "8:15 AM" -> "08:15:00" (Untuk PostgreSQL)
+        function convertTo24Hour(timeStr) {
+            const [time, modifier] = timeStr.split(' ');
+            let [hours, minutes] = time.split(':');
+            hours = parseInt(hours, 10);
+            if (hours === 12) hours = 0;
+            if (modifier === 'PM') hours += 12;
+            return `${hours.toString().padStart(2, '0')}:${minutes}:00`;
+        }
+
+        // Tukar "08:15:00" -> "8:15 AM" (Untuk UI Halaman)
+        function convertToUITime(dbTime) {
+            let [hours, minutes] = dbTime.split(':');
+            hours = parseInt(hours, 10);
+            let modifier = 'AM';
+            if (hours >= 12) {
+                modifier = 'PM';
+                if (hours > 12) hours -= 12;
+            }
+            if (hours === 0) hours = 12;
+            return `${hours}:${minutes} ${modifier}`;
+        }
+
+        // Dapatkan tarikh sebenar bagi minggu ini (Isnin, Ahad, etc.)
+        function formattedDateString(dayName) {
+            const daysOfWeek = ["SUNDAY", "MONDAY", "TEUSDAY", "WEDNESDAY", "THURSDAY"];
+            const targetIdx = daysOfWeek.indexOf(dayName);
+            const today = new Date();
+            const currentIdx = today.getDay(); // 0 = Sunday, 1 = Monday...
+            const diff = targetIdx - currentIdx;
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() + diff);
+            return targetDate.toISOString().split('T')[0];
+        }
+    </script>
 </body>
 </html>
