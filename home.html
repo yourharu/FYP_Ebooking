@@ -2,24 +2,29 @@
 <html lang="ms">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HOME | ROBLO-BOOK</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Bungee&family=Poppins:wght@400;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style_index.css">
 </head>
-<body>
+<body style="background-color: #e0e0e0;">
+
     <nav class="navbar navbar-dark mb-4 p-3 shadow">
         <div class="container text-uppercase">
             <a class="navbar-brand font-bungee" href="#"><i class="bi bi-house-door-fill"></i> HOME DASHBOARD</a>
-            <button class="btn btn-danger btn-sm font-bungee border-2 border-white" onclick="window.location.href='index.html'">LOG OUT</button>
+            <!-- Butang LOG OUT sekarang memanggil fungsi doLogout() -->
+            <button class="btn btn-danger btn-sm font-bungee border-2 border-white" onclick="doLogout()">LOG OUT</button>
         </div>
     </nav>
 
-    <div class="container text-center">
+    <div class="container text-center text-uppercase">
         <div class="roblox-card w-100 mt-0" style="max-width: 800px; margin: auto;">
             <h1 class="font-bungee text-dark">WELCOME BACK, <span id="userDisp">PLAYER</span>!</h1>
-            <img src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Isma" class="my-4" style="width: 150px; border: 5px solid var(--roblox-dark);">
+            
+            <!-- Ditambah id="userAvatar" untuk membolehkan avatar berubah mengikut nama secara automatik -->
+            <img id="userAvatar" src="https://api.dicebear.com/7.x/pixel-art/svg?seed=Isma" class="my-4" style="width: 150px; border: 5px solid var(--roblox-dark);">
             
             <div class="row g-3 text-uppercase">
                 <div class="col-md-6">
@@ -35,15 +40,50 @@
                     </div>
                 </div>
             </div>
-
+            
             <button class="btn btn-roblox btn-success w-100 py-3 mt-4 fs-3 text-white" onclick="window.location.href='room_selection.html'">
                 <i class="bi bi-calendar-check"></i> GO TO BOOKING SYSTEM
             </button>
         </div>
     </div>
 
+    <!-- Masukkan Supabase CDN ke dalam HTML -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        document.getElementById('userDisp').innerText = localStorage.getItem('currentUser') || 'USER';
+        // ==========================================
+        // 1. CONFIGURATION BACKEND (KUNCI SAMBUNGAN)
+        // ==========================================
+        const supabaseUrl = 'https://doyyrhhscdpchuvpancq.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRveXlyaGhzY2RwY2h1dnBhbmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjkzNjksImV4cCI6MjA5NTIwNTM2OX0.liPsexqKQTnZe5UpB1DW5zpZ12I05REflxYaNbf6l8A';
+        const _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        // ==========================================
+        // 2. TAMPILKAN USERNAME & AVATAR DINAMIK
+        // ==========================================
+        const username = localStorage.getItem('currentUser') || 'USER';
+        document.getElementById('userDisp').innerText = username;
+        
+        // GAMIFIKASI: Tukar benih (seed) DiceBear secara automatik mengikut nama pelajar
+        document.getElementById('userAvatar').src = `https://api.dicebear.com/7.x/pixel-art/svg?seed=${username}`;
+
+        // ==========================================
+        // 3. FUNGSI LOG OUT SEBENAR (SIGN OUT)
+        // ==========================================
+        async function doLogout() {
+            if (!confirm("DO YOU WANT TO LOG OUT?")) return;
+
+            const { error } = await _supabase.auth.signOut();
+            
+            if (error) {
+                alert("Gagal Log Out: " + error.message);
+            } else {
+                localStorage.clear(); // Bersihkan semua memori login di browser browser
+                alert("Logged Out Successfully!");
+                window.location.href = 'index.html'; // Bawa semula ke halaman login
+            }
+        }
     </script>
 </body>
 </html>
