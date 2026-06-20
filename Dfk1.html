@@ -214,6 +214,7 @@
         // Jalankan fungsi tarik data sebaik sahaja halaman dimuatkan
         window.onload = function() {
             fetchBookings();
+            checkUrlForExtension(); // DIKEMASKINI: Semak jika ada permintaan penambahan masa dari emel! [18, 46]
         };
 
         function showRoomPhoto() { 
@@ -304,7 +305,7 @@
                 } else {
                     statusSpan.className = "text-warning fw-bold";
                     
-                    // DIKEMASKINI: Hanya aktifkan butang check-in jika waktu sekarang berada dalam tingkap 15 minit [18, 45]
+                    // Hanya aktifkan butang check-in jika waktu sekarang berada dalam tingkap 15 minit [18, 45]
                     if (isWindowActive) {
                         btnCheckIn.style.display = 'block'; 
                         btnCheckIn.removeAttribute('disabled');
@@ -411,6 +412,38 @@
             }
         }
 
+        // DIKEMASKINI: Menerima isyarat pautan dari emel untuk penambahan masa [18, 45, 46]
+        async function checkUrlForExtension() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const extendId = urlParams.get('extend_id');
+            const originalEndTime = urlParams.get('end_time'); // Contoh: "12:00"
+            
+            if (extendId && originalEndTime) {
+                // Bersihkan URL supaya parameter hilang selepas sekali semak [28]
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                if (confirm(`DO YOU WANT TO EXTEND YOUR SESSION IN ROOM DFK 1 BY 1 HOUR?`)) {
+                    // Kira end_time baru (tambah 1 jam) [45]
+                    const [hours, minutes] = originalEndTime.split(':');
+                    let newHours = parseInt(hours) + 1;
+                    if (newHours >= 24) newHours = 0; // Handle midnight wrap-around
+                    const newEndTime = `${String(newHours).padStart(2, '0')}:${minutes}:00`;
+                    
+                    const { error } = await _supabase
+                        .from('bookings')
+                        .update({ end_time: newEndTime })
+                        .eq('id', extendId);
+                        
+                    if (error) {
+                        alert("Extension Failed: " + error.message);
+                    } else {
+                        alert("SESSION EXTENDED SUCCESSFULLY BY 1 HOUR!");
+                        fetchBookings(); // Refresh timetable!
+                    }
+                }
+            }
+        }
+
         // Penukaran masa 12 jam -> 24 jam
         function convertTo24Hour(timeStr) {
             const [time, modifier] = timeStr.split(' ');
@@ -457,7 +490,7 @@
             return `${year}-${month}-${date}`;
         }
 
-        // DIKEMASKINI: Mengira sama ada tingkap masa 15 minit sebelum/selepas check-in sedang aktif [18, 45]
+        // Mengira sama ada tingkap masa 15 minit sebelum/selepas check-in sedang aktif [18, 45]
         function isCheckInWindowActive(bookingDateStr, startTimeStr) {
             const today = new Date();
             
