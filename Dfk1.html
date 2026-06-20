@@ -14,12 +14,23 @@
         .slot-booked {
             background-color: #ff4d4d !important; /* Warna merah Roblox */
             color: white !important;
+            font-family: 'Bungee', sans-serif !important; 
+            font-size: 14px;
             font-weight: bold;
+            border: 2px solid #343a40 !important; 
+            text-align: center;
+            vertical-align: middle;
         }
         .slot-available {
-            background-color: #28a745 !important; /* Warna hijau Roblox */
-            color: white !important;
+            background-color: #ffffff !important; /* Warna putih */
+            color: #000000 !important; /* Tulisan hitam */
+            font-family: 'Bungee', sans-serif !important; 
+            font-size: 14px;
             font-weight: bold;
+            border: 2px solid #343a40 !important; 
+            text-align: center;
+            vertical-align: middle;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -58,11 +69,10 @@
                 <table class="table table-bordered mb-0">
                     <thead class="bg-dark text-white text-center">
                         <tr>
-                            <th class="sticky-col py-3" style="min-width: 125px;">DATE/TIME</th>
+                            <th class="sticky-col py-3 text-nowrap" style="min-width: 140px; background-color: #212529;">DATE/TIME</th>
                             <script>
-                                // Menggunakan window.times supaya boleh diakses oleh semua script tag
                                 window.times = ["8:15 AM", "9:15 AM", "10:15 AM", "10:45 AM", "11:45 AM", "12:45 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM", "6:00 PM"];
-                                window.times.forEach(t => document.write(`<th class="py-3">${t}</th>`));
+                                window.times.forEach(t => document.write(`<th class="py-3 text-nowrap" style="min-width: 110px;">${t}</th>`));
                             </script>
                         </tr>
                     </thead>
@@ -71,12 +81,12 @@
                             const days = ["SUNDAY", "MONDAY", "TEUSDAY", "WEDNESDAY", "THURSDAY"];
                             days.forEach(day => {
                                 document.write(`<tr>`);
-                                document.write(`<td class="sticky-col fw-bold text-center border-2 border-dark ">${day}</td>`);
+                                document.write(`<td class="sticky-col fw-bold text-center border-2 border-dark bg-info text-dark font-bungee" style="vertical-align: middle;">${day}</td>`);
                                 window.times.forEach(time => {
-                                    document.write(`<td class="timetable-slot slot-available btn-roblox" 
-                                        id="${day}-${time.replace(/[: ]/g, '')}" 
-                                        data-day="${day}" 
-                                        data-time="${time}" 
+                                    document.write(`<td class="timetable-slot slot-available"
+                                        id="${day}-${time.replace(/[: ]/g, '')}"
+                                        data-day="${day}"
+                                        data-time="${time}"
                                         onclick="handleSlotClick('${day}', '${time}')">AVAILABLE</td>`);
                                 });
                                 document.write(`</tr>`);
@@ -89,28 +99,39 @@
     </div>
 
     <!-- MODAL 1: GAMBAR BILIK -->
-    <div class="modal fade" id="photoModal">
+    <div class="modal fade" id="photoModal" tabindex="-1">
         <div class="modal-dialog modal-lg">
             <div class="modal-content border-5 border-dark rounded-0">
-                <div class="modal-header bg-success text-white border-0"><h5 class="modal-title font-bungee">DFK1 ROOM'S PHOTO</h5></div>
-                <div class="modal-body text-center bg-light">
-                    <img src="https://media.architecturaldigest.com/photos/573489112959663327663f7d/16:9/w_2560%2Cc_limit/modern-office-spaces-01.jpg" 
-                         class="img-fluid border-4 border-dark shadow" alt="Bilik DFK 1">
+                <div class="modal-header bg-success text-white border-0">
+                    <h5 class="modal-title font-bungee">DFK1 ROOM'S PHOTO</h5>
                 </div>
-                <div class="modal-footer border-0"><button class="btn btn-roblox btn-dark w-100" data-bs-dismiss="modal">CLOSE</button></div>
+                <div class="modal-body text-center bg-light">
+                    <img src="https://media.architecturaldigest.com/photos/573489112959663327663f7d/16:9/w_2560%2Cc_limit/modern-office-space.jpg" class="img-fluid border-4 border-dark shadow" alt="Bilik DFK 1">
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-roblox btn-dark w-100" data-bs-dismiss="modal">CLOSE</button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- MODAL 2: BORANG TEMPAHAN -->
-    <div class="modal fade" id="bookingModal">
+    <div class="modal fade" id="bookingModal" tabindex="-1">
         <div class="modal-dialog text-uppercase">
             <div class="modal-content border-5 border-dark rounded-0">
-                <div class="modal-header bg-primary text-white border-0"><h5 class="modal-title font-bungee">NEW BOOKING</h5></div>
+                <div class="modal-header bg-primary text-white border-0">
+                    <h5 class="modal-title font-bungee">NEW BOOKING</h5>
+                </div>
                 <div class="modal-body">
                     <div class="row mb-3">
-                        <div class="col-6"><label class="fw-bold small">DATE:</label><input type="text" id="mDay" class="form-control fw-bold" readonly></div>
-                        <div class="col-6"><label class="fw-bold small">START:</label><input type="text" id="mStart" class="form-control fw-bold" readonly></div>
+                        <div class="col-6">
+                            <label class="fw-bold small">DATE:</label>
+                            <input type="text" id="mDay" class="form-control fw-bold" readonly>
+                        </div>
+                        <div class="col-6">
+                            <label class="fw-bold small">START:</label>
+                            <input type="text" id="mStart" class="form-control fw-bold" readonly>
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="fw-bold small text-dark">END CLASS:</label>
@@ -118,36 +139,46 @@
                     </div>
                     <div class="mb-3">
                         <label class="fw-bold small">SUBJECT:</label>
-                         <select id="mSubject" class="form-select border-3 border-dark fw-bold text-center">
+                        <select id="mSubject" class="form-select border-3 border-dark fw-bold text-center">
                             <option value="" disabled selected>PILIH...</option>
                             <option value="NETWORK">NETWORK</option>
                             <option value="DATABASE">DATABASE</option>
                             <option value="IT EMERGING">IT EMERGING</option>
-                         </select>
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="fw-bold small">LECTURER:</label>
                         <input type="text" id="mLecturer" class="form-control border-2 border-dark" placeholder="NAMA LECTURER">
                     </div>
                 </div>
-                <div class="modal-footer border-0"><button class="btn btn-roblox btn-success w-100 py-2 fs-5" onclick="processBooking()">PROCEED</button></div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-roblox btn-success w-100 py-2 fs-5" onclick="processBooking()">PROCEED</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL 3: INFO & CANCEL -->
-    <div class="modal fade" id="infoModal">
+    <!-- MODAL 3: INFO, CHECK-IN & CANCEL -->
+    <div class="modal fade" id="infoModal" tabindex="-1">
         <div class="modal-dialog text-uppercase">
             <div class="modal-content border-5 border-dark rounded-0 text-center">
-                <div class="modal-header bg-dark text-white border-0"><h5 class="modal-title font-bungee w-100">INFORMATION</h5></div>
+                <div class="modal-header bg-dark text-white border-0">
+                    <h5 class="modal-title font-bungee w-100">INFORMATION</h5>
+                </div>
                 <div class="modal-body py-4">
-                    <h2 class="font-bungee text-danger mb-0" id="infoBooker">NAME:</h2>
+                    <h2 class="font-bungee text-danger mb-0" id="infoBooker">NAME</h2>
                     <div class="text-start bg-light p-3 border-2 border-dark mt-3">
                         <p class="mb-1"><strong>SUBJECT:</strong> <span id="infoSubject">---</span></p>
                         <p class="mb-1"><strong>LECTURER:</strong> <span id="infoLecturer">---</span></p>
-                        <p class="mb-0"><strong>TIME:</strong> <span id="infoTimeRange">---</span></p>
+                        <p class="mb-1"><strong>TIME:</strong> <span id="infoTimeRange">---</span></p>
+                        <p class="mb-0"><strong>STATUS:</strong> <span id="infoStatus" class="fw-bold">---</span></p>
                     </div>
-                    <button class="btn btn-roblox btn-danger w-100 mt-4 py-3 fs-5" onclick="cancelBooking()">CANCEL BOOKING</button>
+                    
+                    <!-- Butang Check-In Baru (Warna Hijau) [18] -->
+                    <button id="btnCheckIn" class="btn btn-roblox btn-success w-100 mt-4 py-3 fs-5" onclick="checkInBooking()">CONFIRM & CHECK-IN NOW</button>
+                    
+                    <!-- Butang Cancel (Warna Merah) -->
+                    <button class="btn btn-roblox btn-danger w-100 mt-2 py-3 fs-5" onclick="cancelBooking()">CANCEL BOOKING</button>
                 </div>
             </div>
         </div>
@@ -166,7 +197,7 @@
         const _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
 
         // ===================================================
-        // 2. PEMBOLEH UBAH UTAMA (HANYA INI YANG BERUBAH IKUT BILIK)
+        // 2. PEMBOLEH UBAH UTAMA
         // ===================================================
         const ROOM_NAME = "DFK 1"; 
 
@@ -189,15 +220,16 @@
             new bootstrap.Modal(document.getElementById('photoModal')).show(); 
         }
 
-        // FUNGSI UNTUK TARIK DATA DARI DATABASE (SELECT)
+        // FUNGSI UNTUK TARIK DATA DARI DATABASE (SELECT) [1.1.3]
         async function fetchBookings() {
             resetTimetable(); 
 
+            // Menarik data bertaraf 'Pending' dan juga 'Checked-In'
             const { data: bookings, error } = await _supabase
                 .from('bookings')
                 .select('*')
                 .eq('room_name', ROOM_NAME)
-                .eq('status', 'Pending'); 
+                .in('status', ['Pending', 'Checked-In']); 
 
             if (error) {
                 console.error("Gagal mengambil data bookings:", error);
@@ -221,7 +253,10 @@
                             subject: b.subject,
                             lecturer: b.lecturer,
                             startTime: startUI,
-                            endTime: endUI
+                            endTime: endUI,
+                            status: b.status,
+                            date: b.booking_date,      // Menyimpan tarikh asal [1.1.2]
+                            startTimeRaw: b.start_time // Menyimpan masa 24 jam asal [1.1.2]
                         };
                         const cell = document.getElementById(key);
                         if (cell) {
@@ -255,6 +290,34 @@
                 document.getElementById('infoSubject').innerText = data.subject;
                 document.getElementById('infoLecturer').innerText = data.lecturer;
                 document.getElementById('infoTimeRange').innerText = data.startTime + " - " + data.endTime;
+                
+                // Paparkan status di dalam modal
+                const statusSpan = document.getElementById('infoStatus');
+                statusSpan.innerText = data.status;
+                
+                const isWindowActive = isCheckInWindowActive(data.date, data.startTimeRaw);
+                const btnCheckIn = document.getElementById('btnCheckIn');
+                
+                if (data.status === 'Checked-In') {
+                    statusSpan.className = "text-success fw-bold";
+                    btnCheckIn.style.display = 'none'; // Sembunyikan jika sudah check-in [18]
+                } else {
+                    statusSpan.className = "text-warning fw-bold";
+                    
+                    // DIKEMASKINI: Hanya aktifkan butang check-in jika waktu sekarang berada dalam tingkap 15 minit [18, 45]
+                    if (isWindowActive) {
+                        btnCheckIn.style.display = 'block'; 
+                        btnCheckIn.removeAttribute('disabled');
+                        btnCheckIn.className = "btn btn-roblox btn-success w-100 mt-4 py-3 fs-5";
+                        btnCheckIn.innerText = "CONFIRM & CHECK-IN NOW";
+                    } else {
+                        btnCheckIn.style.display = 'block'; 
+                        btnCheckIn.setAttribute('disabled', 'true'); // Matikan butang jika luar waktu! [18]
+                        btnCheckIn.className = "btn btn-roblox btn-secondary w-100 mt-4 py-3 fs-5 text-white";
+                        btnCheckIn.innerText = "CHECK-IN NOT AVAILABLE YET";
+                    }
+                }
+                
                 new bootstrap.Modal(document.getElementById('infoModal')).show();
             } else {
                 curDay = day; 
@@ -274,7 +337,7 @@
             }
         }
 
-        // FUNGSI HANTAR TEMPAHAN BARU KE DATABASE (INSERT)
+        // FUNGSI HANTAR TEMPAHAN BARU KE DATABASE (INSERT) [1.1.3]
         async function processBooking() {
             const endVal = document.getElementById('mEnd').value;
             const subVal = document.getElementById('mSubject').value;
@@ -285,7 +348,6 @@
                 return; 
             }
 
-            // Guna nama fungsi pembantu yang betul: formattedDateString()
             const formattedDate = formattedDateString(curDay);
 
             const { data, error } = await _supabase
@@ -311,7 +373,23 @@
             } else {
                 alert("BOOKING SUCCESSFUL!");
                 bootstrap.Modal.getInstance(document.getElementById('bookingModal')).hide();
-                fetchBookings(); // Tarik semula dari database untuk warnakan merah terus!
+                fetchBookings(); 
+            }
+        }
+
+        // FUNGSI PENGESAHAN KEHADIRAN (UPDATE STATUS -> CHECKED-IN) [18, 45]
+        async function checkInBooking() {
+            const { error } = await _supabase
+                .from('bookings')
+                .update({ status: 'Checked-In' })
+                .eq('id', currentActiveBookingId);
+
+            if (error) {
+                alert("Check-In Gagal: " + error.message);
+            } else {
+                alert("CHECK-IN SUCCESSFUL! ENJOY YOUR CLASS!");
+                bootstrap.Modal.getInstance(document.getElementById('infoModal')).hide();
+                fetchBookings(); // Refresh jadual
             }
         }
 
@@ -329,7 +407,7 @@
             } else {
                 alert("BOOKING CANCELLED!");
                 bootstrap.Modal.getInstance(document.getElementById('infoModal')).hide();
-                fetchBookings(); // Refresh jadual!
+                fetchBookings(); 
             }
         }
 
@@ -356,16 +434,52 @@
             return `${hours}:${minutes} ${modifier}`;
         }
 
-        // Mengira tarikh YYYY-MM-DD mengikut nama hari pada minggu semasa
+        // Mengira tarikh YYYY-MM-DD mengikut nama hari pada minggu semasa (DIKEMASKINI) [1.1.2]
         function formattedDateString(dayName) {
             const daysOfWeek = ["SUNDAY", "MONDAY", "TEUSDAY", "WEDNESDAY", "THURSDAY"];
             const targetIdx = daysOfWeek.indexOf(dayName);
             const today = new Date();
-            const currentIdx = today.getDay(); // 0 = Sunday, 1 = Monday...
-            const diff = targetIdx - currentIdx;
+            const currentIdx = today.getDay(); 
+            
+            let diff = targetIdx - currentIdx;
+            
+            if (diff < 0) {
+                diff += 7;
+            }
+            
             const targetDate = new Date(today);
             targetDate.setDate(today.getDate() + diff);
-            return targetDate.toISOString().split('T')[0];
+            
+            const year = targetDate.getFullYear();
+            const month = String(targetDate.getMonth() + 1).padStart(2, '0');
+            const date = String(targetDate.getDate()).padStart(2, '0');
+            
+            return `${year}-${month}-${date}`;
+        }
+
+        // DIKEMASKINI: Mengira sama ada tingkap masa 15 minit sebelum/selepas check-in sedang aktif [18, 45]
+        function isCheckInWindowActive(bookingDateStr, startTimeStr) {
+            const today = new Date();
+            
+            // Parse tarikh 'YYYY-MM-DD' secara manual untuk elak isu zon masa JavaScript [1.1.2]
+            const [year, month, day] = bookingDateStr.split('-');
+            const [hours, minutes] = startTimeStr.split(':');
+            
+            const bookingDateTime = new Date(
+                parseInt(year),
+                parseInt(month) - 1, // Bulan bermula dengan 0 di JS
+                parseInt(day),
+                parseInt(hours),
+                parseInt(minutes),
+                0,
+                0
+            );
+            
+            // Kira window: 15 minit sebelum hingga 15 minit selepas waktu mula [18, 45]
+            const windowStart = new Date(bookingDateTime.getTime() - 15 * 60 * 1000);
+            const windowEnd = new Date(bookingDateTime.getTime() + 15 * 60 * 1000);
+            
+            return (today >= windowStart && today <= windowEnd);
         }
     </script>
 </body>
