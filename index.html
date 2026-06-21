@@ -22,14 +22,30 @@
             <label class="fw-bold small">PASSWORD:</label>
             <input type="password" id="loginPass" class="form-control" placeholder="PASSWORD">
         </div>
+        
+        <!-- Butang LET'S GO! memanggil fungsi doLogin() di bawah -->
         <button class="btn btn-roblox btn-success w-100 py-3 fs-3 text-white mb-3" onclick="doLogin()">LET'S GO!</button>
         <button class="btn btn-roblox btn-primary w-100 py-2" onclick="window.location.href='register.html'">SIGN UP</button>
     </div>
 
+    <!-- 2. LOGIK BACKEND: Kod sambungan login Supabase -->
     <script>
-        function doLogin() {
+        // Masukkan URL dan Kunci Supabase Projek Awak (Sama seperti dalam register.html)
+        const supabaseUrl = 'https://doyyrhhscdpchuvpancq.supabase.co';
+        const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRveXlyaGhzY2RwY2h1dnBhbmNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk2MjkzNjksImV4cCI6MjA5NTIwNTM2OX0.liPsexqKQTnZe5UpB1DW5zpZ12I05REflxYaNbf6l8A';
+        
+        // Inisialisasi sambungan
+        const _supabase = supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+        async function doLogin() {
             const email = document.getElementById('loginEmail').value;
-            if(!email) { alert("PLEASE ENTER YOUR EMAIL!"); return; }
+            const password = document.getElementById('loginPass').value;
+
+            // Pastikan pengguna isi kedua-dua ruangan
+            if (!email || !password) {
+                alert("PLEASE ENTER BOTH EMAIL AND PASSWORD!");
+                return;
+            }
             
             // Simpan email 
             const username = email.split('@')[0].toUpperCase();
