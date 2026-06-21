@@ -114,3 +114,14 @@ thead th {
     background-color: rgb(106, 194, 242) !important;
     color: #333 !important;
 }
+
+/* Efek berkelip sikit untuk amaran check-in */
+.animate-pulse {
+    animation: pulse-border 1.5s infinite;
+}
+
+@keyframes pulse-border {
+    0% { border-color: #393B3D; }
+    50% { border-color: #ff8f00; }
+    100% { border-color: #393B3D; }
+}
